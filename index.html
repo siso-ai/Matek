@@ -208,14 +208,140 @@
     color: var(--text-dim);
   }
   .footer a { color: var(--text-dim); text-decoration: underline; }
+
+  /* ── Nav Links ───────────────────────── */
+  .nav-links {
+    display: flex;
+    gap: 6px;
+    margin-left: auto;
+  }
+  .nav-links a {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+    background: var(--surface2);
+    padding: 3px 10px;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+    text-decoration: none;
+    transition: all 0.15s;
+  }
+  .nav-links a:hover {
+    color: var(--ice);
+    border-color: var(--ice);
+  }
+
+  /* ── Modal Overlay ───────────────────── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(4, 6, 10, 0.85);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+    animation: modalFadeIn 0.3s ease;
+  }
+  @keyframes modalFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    max-width: 500px;
+    width: 90%;
+    padding: 32px;
+    animation: modalSlideIn 0.3s ease;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+  }
+  @keyframes modalSlideIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .modal h2 {
+    font-family: var(--serif);
+    font-size: 24px;
+    font-weight: 400;
+    color: var(--text-bright);
+    margin-bottom: 16px;
+    letter-spacing: -0.02em;
+  }
+  .modal h2 span { color: var(--ice); font-style: italic; }
+  .modal p {
+    font-size: 12px;
+    line-height: 1.8;
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+  .modal p.dim {
+    color: var(--text-dim);
+    font-size: 11px;
+  }
+  .modal .modal-links {
+    display: flex;
+    gap: 8px;
+    margin: 16px 0 8px;
+  }
+  .modal .modal-links a {
+    font-size: 11px;
+    color: var(--ice);
+    background: var(--surface2);
+    padding: 6px 14px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    text-decoration: none;
+    transition: all 0.15s;
+  }
+  .modal .modal-links a:hover {
+    border-color: var(--ice);
+    background: var(--bg);
+  }
+  .modal .modal-btn {
+    display: inline-block;
+    margin-top: 8px;
+    background: var(--accent);
+    border: none;
+    color: #fff;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 10px 24px;
+    border-radius: 4px;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    transition: all 0.15s;
+  }
+  .modal .modal-btn:hover { opacity: 0.85; }
 </style>
 </head>
 <body>
+
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <h2><span>Math</span> Gate</h2>
+    <p>A single gate that handles all of mathematics. 216 pattern-rewrite rules across 11 domains — arithmetic, algebra, calculus, trigonometry, linear algebra, set theory, logic, number theory, complex analysis, differential equations, and statistics.</p>
+    <p>Built on the <strong style="color:var(--text-bright)">SISO framework</strong>. An expression enters the stream, the gate pattern-matches and emits a rewrite, the rewrite re-enters. This repeats depth-first until nothing matches — convergence. The step-by-step trace below each result is the full derivation proof.</p>
+    <p class="dim">For more practical demos of the same architecture:</p>
+    <div class="modal-links">
+      <a href="./calculus" target="_blank">Calculus →</a>
+      <a href="./fourier-analysis" target="_blank">Fourier Analysis →</a>
+    </div>
+    <button class="modal-btn" id="modal-dismiss">Enter</button>
+  </div>
+</div>
 
 <header>
   <h1><span>Math</span> Gate</h1>
   <span class="tag">SISO Framework</span>
   <span class="stats"><em id="transform-count">0</em> transforms · <em>11</em> domains · <em>1</em> gate</span>
+  <div class="nav-links">
+    <a href="./calculus" target="_blank">Calculus</a>
+    <a href="./fourier-analysis" target="_blank">Fourier Analysis</a>
+  </div>
 </header>
 
 <div class="container">
@@ -633,6 +759,23 @@ for (const [cat, exprs] of Object.entries(examples)) {
     exprs.map(e => `<button onclick="run('${e.replace(/'/g, "\\'")}')">${esc(e)}</button>`).join('') +
     `</div>`;
 }
+
+// ── Modal ───────────────────────────────
+function dismissModal() {
+  const overlay = document.getElementById('modal-overlay');
+  if (!overlay) return;
+  overlay.style.opacity = '0';
+  overlay.style.transition = 'opacity 0.25s ease';
+  setTimeout(function() { overlay.remove(); }, 250);
+  document.getElementById('expr-input').focus();
+}
+document.getElementById('modal-dismiss').addEventListener('click', dismissModal);
+document.addEventListener('keydown', function(e) {
+  if ((e.key === 'Enter' || e.key === 'Escape') && document.getElementById('modal-overlay')) {
+    e.preventDefault();
+    dismissModal();
+  }
+}, { once: true });
 </script>
 </body>
 </html>
