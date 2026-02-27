@@ -42,7 +42,7 @@ The stream's `→E→E→` loop *is* the reduction engine. No special evaluation
 | **Statistics** | Probability rules, Bayes' theorem, expectation, variance, standard distributions |
 
 ## Usage
-
+JUST use the index.html for demonstration.
 ```php
 <?php
 require_once 'math-demo.php';
