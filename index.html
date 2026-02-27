@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Math Gate — SISO Framework</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c10;
+    --surface: #12151c;
+    --surface2: #1a1e28;
+    --border: #252a36;
+    --border-focus: #4a7cff;
+    --text: #c8cdd8;
+    --text-dim: #6b7280;
+    --text-bright: #e8ecf4;
+    --accent: #4a7cff;
+    --ice: #7ec8e3;
+    --green: #34d399;
+    --amber: #fbbf24;
+    --rose: #f87171;
+    --mono: 'DM Mono', 'Menlo', monospace;
+    --serif: 'Instrument Serif', Georgia, serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  header {
+    padding: 20px 32px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    background: linear-gradient(180deg, #0e1118 0%, var(--bg) 100%);
+  }
+  header h1 {
+    font-family: var(--serif);
+    font-size: 24px;
+    font-weight: 400;
+    color: var(--text-bright);
+    letter-spacing: -0.02em;
+  }
+  header h1 span { color: var(--ice); font-style: italic; }
+  header .tag {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-dim);
+    background: var(--surface2);
+    padding: 3px 8px;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+  }
+  .stats {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+  .stats em { color: var(--ice); font-style: normal; }
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 24px 32px;
+  }
+
+  /* Input area */
+  .input-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .input-row input {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 10px 14px;
+    font-family: var(--mono);
+    font-size: 15px;
+    color: var(--text-bright);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .input-row input:focus {
+    border-color: var(--border-focus);
+  }
+  .input-row input::placeholder { color: var(--text-dim); }
+  .input-row button {
+    background: var(--accent);
+    border: none;
+    border-radius: 4px;
+    padding: 10px 20px;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: #fff;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    white-space: nowrap;
+  }
+  .input-row button:hover { opacity: 0.85; }
+
+  /* Result */
+  .result-area {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 24px;
+    min-height: 60px;
+  }
+  .result-header {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-dim);
+  }
+  .result-body {
+    padding: 16px;
+  }
+  .result-final {
+    font-size: 20px;
+    color: var(--text-bright);
+    margin-bottom: 12px;
+    word-break: break-all;
+  }
+  .result-final .arrow { color: var(--ice); margin: 0 10px; }
+  .result-input { color: var(--text-dim); }
+  .result-output { color: var(--green); }
+  .no-transform { color: var(--text-dim); font-style: italic; font-size: 14px; }
+
+  /* Steps */
+  .steps { margin-top: 8px; }
+  .step {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    padding: 5px 0;
+    font-size: 12px;
+    border-bottom: 1px solid #1a1e28;
+  }
+  .step:last-child { border-bottom: none; }
+  .step-num { color: var(--text-dim); min-width: 20px; text-align: right; }
+  .step-rule {
+    color: var(--amber);
+    min-width: 140px;
+    font-size: 11px;
+  }
+  .step-from { color: var(--text-dim); }
+  .step-arrow { color: var(--ice); margin: 0 6px; }
+  .step-to { color: var(--text-bright); }
+
+  /* Examples */
+  .examples-section { margin-top: 8px; }
+  .examples-section h3 {
+    font-family: var(--serif);
+    font-size: 18px;
+    font-weight: 400;
+    color: var(--text-bright);
+    margin-bottom: 12px;
+  }
+  .cat-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    margin-top: 14px;
+    margin-bottom: 6px;
+  }
+  .cat-label:first-child { margin-top: 0; }
+  .example-btns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 4px;
+  }
+  .example-btns button {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 4px 10px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .example-btns button:hover {
+    border-color: var(--ice);
+    color: var(--text-bright);
+  }
+
+  .footer {
+    margin-top: 32px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+  .footer a { color: var(--text-dim); text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1><span>Math</span> Gate</h1>
+  <span class="tag">SISO Framework</span>
+  <span class="stats"><em id="transform-count">0</em> transforms · <em>11</em> domains · <em>1</em> gate</span>
+</header>
+
+<div class="container">
+  <div class="input-row">
+    <input type="text" id="expr-input" placeholder="Enter expression — e.g. d/dx x^4" autofocus>
+    <button onclick="run()">Transform</button>
+  </div>
+
+  <div class="result-area" id="result-area">
+    <div class="result-header">Result</div>
+    <div class="result-body">
+      <div class="no-transform">Enter an expression above or choose an example below.</div>
+    </div>
+  </div>
+
+  <div class="examples-section">
+    <h3>Examples</h3>
+    <div id="examples"></div>
+  </div>
+
+  <div class="footer">
+    One gate. Symbolic mathematics. Pattern matching and rewriting.<br>
+    <a href="https://siso-framework.org">siso-framework.org</a>
+  </div>
+</div>
+
+<script>
+// ── CORE (minimal) ──────────────────────────────
+
+class Event {
+  constructor(type, data = {}) { this.type = type; this.data = data; }
+}
+
+class MathStream {
+  constructor(maxIter = 80) {
+    this.transforms = [];
+    this.maxIter = maxIter;
+  }
+  addTransform(name, pattern, replacement) {
+    this.transforms.push({ name, pattern, replacement });
+  }
+  run(input) {
+    const history = [];
+    let expr = input;
+    let iterations = 0;
+    while (iterations < this.maxIter) {
+      let matched = false;
+      for (const t of this.transforms) {
+        if (t.pattern.test(expr)) {
+          const before = expr;
+          t.pattern.lastIndex = 0;
+          if (typeof t.replacement === 'function') {
+            expr = expr.replace(t.pattern, t.replacement);
+          } else {
+            expr = expr.replace(t.pattern, t.replacement);
+          }
+          if (expr !== before) {
+            history.push({ rule: t.name, from: before, to: expr });
+            matched = true;
+            break;
+          }
+        }
+      }
+      if (!matched) break;
+      iterations++;
+    }
+    return { input, output: expr, history, iterations };
+  }
+}
+
+// ── BUILD THE GATE ──────────────────────────────
+
+const gate = new MathStream(80);
+
+// Arithmetic
+gate.addTransform('add', /\((\d+)\s*\+\s*(\d+)\)/, (_, a, b) => String(Number(a) + Number(b)));
+gate.addTransform('subtract', /\((\d+)\s*\-\s*(\d+)\)/, (_, a, b) => String(Number(a) - Number(b)));
+gate.addTransform('multiply', /\((\d+)\s*\*\s*(\d+)\)/, (_, a, b) => String(Number(a) * Number(b)));
+gate.addTransform('divide', /\((\d+)\s*\/\s*(\d+)\)/, (_, a, b) => b != 0 ? String(Number(a) / Number(b)) : 'undefined');
+gate.addTransform('power', /\((\d+)\s*\^\s*(\d+)\)/, (_, a, b) => String(Math.pow(Number(a), Number(b))));
+gate.addTransform('factorial', /(\d+)!/, (_, n) => { let r=1; for(let i=2;i<=Number(n);i++) r*=i; return String(r); });
+gate.addTransform('add_simple', /^(\d+)\s*\+\s*(\d+)$/, (_, a, b) => String(Number(a) + Number(b)));
+gate.addTransform('multiply_simple', /^(\d+)\s*\*\s*(\d+)$/, (_, a, b) => String(Number(a) * Number(b)));
+gate.addTransform('add_zero', /(\w+)\s*\+\s*0/, '$1');
+gate.addTransform('mult_one', /(\w+)\s*\*\s*1(?!\d)/, '$1');
+gate.addTransform('mult_zero', /(\w+)\s*\*\s*0/, '0');
+gate.addTransform('power_one', /(\w+)\s*\^\s*1(?!\d)/, '$1');
+gate.addTransform('power_zero', /(\w+)\s*\^\s*0/, '1');
+
+// Algebra
+gate.addTransform('distribute', /(\w+)\s*\*\s*\((\w+)\s*\+\s*(\w+)\)/, '($1*$2 + $1*$3)');
+gate.addTransform('distribute_minus', /(\w+)\s*\*\s*\((\w+)\s*\-\s*(\w+)\)/, '($1*$2 - $1*$3)');
+gate.addTransform('factor_common', /(\w+)\s*\*\s*(\w+)\s*\+\s*\1\s*\*\s*(\w+)/, '$1*($2 + $3)');
+gate.addTransform('difference_squares', /(\w+)\^2\s*\-\s*(\w+)\^2/, '($1+$2)*($1-$2)');
+gate.addTransform('perfect_square_plus', /(\w+)\^2\s*\+\s*2\*\1\*(\w+)\s*\+\s*\2\^2/, '($1+$2)^2');
+gate.addTransform('perfect_square_minus', /(\w+)\^2\s*\-\s*2\*\1\*(\w+)\s*\+\s*\2\^2/, '($1-$2)^2');
+gate.addTransform('exp_mult', /(\w+)\^(\w+)\s*\*\s*\1\^(\w+)/, '$1^($2+$3)');
+gate.addTransform('exp_div', /(\w+)\^(\w+)\s*\/\s*\1\^(\w+)/, '$1^($2-$3)');
+gate.addTransform('exp_power', /\((\w+)\^(\w+)\)\^(\w+)/, '$1^($2*$3)');
+gate.addTransform('exp_product', /\((\w+)\*(\w+)\)\^(\w+)/, '$1^$3*$2^$3');
+gate.addTransform('log_product', /log\((\w+)\s*\*\s*(\w+)\)/, 'log($1)+log($2)');
+gate.addTransform('log_quotient', /log\((\w+)\s*\/\s*(\w+)\)/, 'log($1)-log($2)');
+gate.addTransform('log_power', /log\((\w+)\^(\w+)\)/, '$2*log($1)');
+gate.addTransform('log_one', /log\(1\)/, '0');
+gate.addTransform('log_e', /ln\(e\)/, '1');
+gate.addTransform('log_same_base', /log_(\w+)\(\1\)/, '1');
+gate.addTransform('sqrt_square', /sqrt\((\w+)\^2\)/, 'abs($1)');
+gate.addTransform('sqrt_product', /sqrt\((\w+)\s*\*\s*(\w+)\)/, 'sqrt($1)*sqrt($2)');
+gate.addTransform('sqrt_quotient', /sqrt\((\w+)\s*\/\s*(\w+)\)/, 'sqrt($1)/sqrt($2)');
+gate.addTransform('abs_positive', /abs\((\d+)\)/, '$1');
+gate.addTransform('abs_squared', /abs\((\w+)\)\^2/, '$1^2');
+gate.addTransform('frac_add_same', /(\w+)\/(\w+)\s*\+\s*(\w+)\/\2/, '($1+$3)/$2');
+gate.addTransform('frac_mult', /\((\w+)\/(\w+)\)\s*\*\s*\((\w+)\/(\w+)\)/, '($1*$3)/($2*$4)');
+gate.addTransform('frac_div', /\((\w+)\/(\w+)\)\s*\/\s*\((\w+)\/(\w+)\)/, '($1*$4)/($2*$3)');
+
+// Calculus — Derivatives
+gate.addTransform('d_const', /d\/dx\s+(\d+)/, '0');
+gate.addTransform('d_x', /d\/dx\s+x(?!\^)/, '1');
+gate.addTransform('d_power', /d\/dx\s+x\^(\d+)/, (_, n) => `${Number(n)}*x^${Number(n)-1}`);
+gate.addTransform('d_power_sym', /d\/dx\s+x\^(\w+)/, '$1*x^($1-1)');
+gate.addTransform('d_exp', /d\/dx\s+e\^x/, 'e^x');
+gate.addTransform('d_exp_chain', /d\/dx\s+e\^\((.+)\)/, 'e^($1)*d/dx $1');
+gate.addTransform('d_ln', /d\/dx\s+ln\(x\)/, '1/x');
+gate.addTransform('d_ln_chain', /d\/dx\s+ln\((.+)\)/, '(1/($1))*d/dx $1');
+gate.addTransform('d_ax', /d\/dx\s+(\d+)\^x/, '$1^x*ln($1)');
+gate.addTransform('d_sin', /d\/dx\s+sin\(x\)/, 'cos(x)');
+gate.addTransform('d_cos', /d\/dx\s+cos\(x\)/, '-sin(x)');
+gate.addTransform('d_tan', /d\/dx\s+tan\(x\)/, 'sec(x)^2');
+gate.addTransform('d_cot', /d\/dx\s+cot\(x\)/, '-csc(x)^2');
+gate.addTransform('d_sec', /d\/dx\s+sec\(x\)/, 'sec(x)*tan(x)');
+gate.addTransform('d_csc', /d\/dx\s+csc\(x\)/, '-csc(x)*cot(x)');
+gate.addTransform('d_arcsin', /d\/dx\s+arcsin\(x\)/, '1/sqrt(1-x^2)');
+gate.addTransform('d_arccos', /d\/dx\s+arccos\(x\)/, '-1/sqrt(1-x^2)');
+gate.addTransform('d_arctan', /d\/dx\s+arctan\(x\)/, '1/(1+x^2)');
+gate.addTransform('d_sum', /d\/dx\s+\((.+)\s*\+\s*(.+)\)/, '(d/dx $1) + (d/dx $2)');
+gate.addTransform('d_diff', /d\/dx\s+\((.+)\s*\-\s*(.+)\)/, '(d/dx $1) - (d/dx $2)');
+gate.addTransform('d_const_mult', /d\/dx\s+(\d+)\*(.+)/, '$1*(d/dx $2)');
+gate.addTransform('d_product', /d\/dx\s+\((\w+)\*(\w+)\)/, '(d/dx $1)*$2 + $1*(d/dx $2)');
+gate.addTransform('d_quotient', /d\/dx\s+\((\w+)\/(\w+)\)/, '((d/dx $1)*$2 - $1*(d/dx $2))/$2^2');
+
+// Calculus — Integrals
+gate.addTransform('int_const', /∫\s*(\d+)\s*dx/, '$1*x + C');
+gate.addTransform('int_x', /∫\s*x\s*dx/, 'x^2/2 + C');
+gate.addTransform('int_power', /∫\s*x\^(\d+)\s*dx/, (_, n) => `x^${Number(n)+1}/${Number(n)+1} + C`);
+gate.addTransform('int_power_neg1', /∫\s*x\^\(-1\)\s*dx/, 'ln|x| + C');
+gate.addTransform('int_1_over_x', /∫\s*1\/x\s*dx/, 'ln|x| + C');
+gate.addTransform('int_exp', /∫\s*e\^x\s*dx/, 'e^x + C');
+gate.addTransform('int_ax', /∫\s*(\d+)\^x\s*dx/, '$1^x/ln($1) + C');
+gate.addTransform('int_sin', /∫\s*sin\(x\)\s*dx/, '-cos(x) + C');
+gate.addTransform('int_cos', /∫\s*cos\(x\)\s*dx/, 'sin(x) + C');
+gate.addTransform('int_tan', /∫\s*tan\(x\)\s*dx/, '-ln|cos(x)| + C');
+gate.addTransform('int_cot', /∫\s*cot\(x\)\s*dx/, 'ln|sin(x)| + C');
+gate.addTransform('int_sec', /∫\s*sec\(x\)\s*dx/, 'ln|sec(x)+tan(x)| + C');
+gate.addTransform('int_csc', /∫\s*csc\(x\)\s*dx/, '-ln|csc(x)+cot(x)| + C');
+gate.addTransform('int_sec2', /∫\s*sec\(x\)\^2\s*dx/, 'tan(x) + C');
+gate.addTransform('int_csc2', /∫\s*csc\(x\)\^2\s*dx/, '-cot(x) + C');
+gate.addTransform('int_sum', /∫\s*\((.+)\s*\+\s*(.+)\)\s*dx/, '(∫ $1 dx) + (∫ $2 dx)');
+gate.addTransform('int_const_mult', /∫\s*(\d+)\*(.+)\s*dx/, '$1*(∫ $2 dx)');
+
+// Calculus — Limits
+gate.addTransform('lim_const', /lim_\{x->(\w+)\}\s*(\d+)/, '$2');
+gate.addTransform('lim_x', /lim_\{x->(\w+)\}\s*x/, '$1');
+gate.addTransform('lim_sinx_x', /lim_\{x->0\}\s*sin\(x\)\/x/, '1');
+gate.addTransform('lim_1_minus_cosx_x', /lim_\{x->0\}\s*\(1-cos\(x\)\)\/x/, '0');
+gate.addTransform('lim_exp_def', /lim_\{n->∞\}\s*\(1\+1\/n\)\^n/, 'e');
+
+// Trigonometry
+gate.addTransform('pyth_sin_cos', /sin\((.+)\)\^2\s*\+\s*cos\(\1\)\^2/, '1');
+gate.addTransform('pyth_tan_sec', /1\s*\+\s*tan\((.+)\)\^2/, 'sec($1)^2');
+gate.addTransform('pyth_cot_csc', /1\s*\+\s*cot\((.+)\)\^2/, 'csc($1)^2');
+gate.addTransform('recip_sin', /1\/sin\((.+)\)/, 'csc($1)');
+gate.addTransform('recip_cos', /1\/cos\((.+)\)/, 'sec($1)');
+gate.addTransform('recip_tan', /1\/tan\((.+)\)/, 'cot($1)');
+gate.addTransform('recip_csc', /1\/csc\((.+)\)/, 'sin($1)');
+gate.addTransform('recip_sec', /1\/sec\((.+)\)/, 'cos($1)');
+gate.addTransform('recip_cot', /1\/cot\((.+)\)/, 'tan($1)');
+gate.addTransform('quot_tan', /sin\((.+)\)\/cos\(\1\)/, 'tan($1)');
+gate.addTransform('quot_cot', /cos\((.+)\)\/sin\(\1\)/, 'cot($1)');
+gate.addTransform('even_cos', /cos\(-(.+)\)/, 'cos($1)');
+gate.addTransform('odd_sin', /sin\(-(.+)\)/, '-sin($1)');
+gate.addTransform('odd_tan', /tan\(-(.+)\)/, '-tan($1)');
+gate.addTransform('sin_sum', /sin\((\w+)\s*\+\s*(\w+)\)/, 'sin($1)*cos($2)+cos($1)*sin($2)');
+gate.addTransform('sin_diff', /sin\((\w+)\s*\-\s*(\w+)\)/, 'sin($1)*cos($2)-cos($1)*sin($2)');
+gate.addTransform('cos_sum', /cos\((\w+)\s*\+\s*(\w+)\)/, 'cos($1)*cos($2)-sin($1)*sin($2)');
+gate.addTransform('cos_diff', /cos\((\w+)\s*\-\s*(\w+)\)/, 'cos($1)*cos($2)+sin($1)*sin($2)');
+gate.addTransform('tan_sum', /tan\((\w+)\s*\+\s*(\w+)\)/, '(tan($1)+tan($2))/(1-tan($1)*tan($2))');
+gate.addTransform('sin_double', /sin\(2\*(\w+)\)/, '2*sin($1)*cos($1)');
+gate.addTransform('cos_double', /cos\(2\*(\w+)\)/, 'cos($1)^2-sin($1)^2');
+gate.addTransform('tan_double', /tan\(2\*(\w+)\)/, '2*tan($1)/(1-tan($1)^2)');
+gate.addTransform('sin_half', /sin\((\w+)\/2\)/, 'sqrt((1-cos($1))/2)');
+gate.addTransform('cos_half', /cos\((\w+)\/2\)/, 'sqrt((1+cos($1))/2)');
+gate.addTransform('sin_0', /sin\(0\)/, '0');
+gate.addTransform('cos_0', /cos\(0\)/, '1');
+gate.addTransform('sin_pi_2', /sin\(π\/2\)/, '1');
+gate.addTransform('cos_pi_2', /cos\(π\/2\)/, '0');
+gate.addTransform('sin_pi', /sin\(π\)/, '0');
+gate.addTransform('cos_pi', /cos\(π\)/, '-1');
+
+// Linear Algebra
+gate.addTransform('det_2x2', /det\[\[(\w+),(\w+)\],\[(\w+),(\w+)\]\]/, '($1*$4-$2*$3)');
+gate.addTransform('trace_2x2', /tr\[\[(\w+),(\w+)\],\[(\w+),(\w+)\]\]/, '($1+$4)');
+gate.addTransform('transpose_2x2', /T\[\[(\w+),(\w+)\],\[(\w+),(\w+)\]\]/, '[[$1,$3],[$2,$4]]');
+gate.addTransform('mult_identity', /(\w+)\s*\*\s*I(?!\w)/, '$1');
+gate.addTransform('identity_mult', /I\s*\*\s*(\w+)/, '$1');
+gate.addTransform('dot_product', /\[(\w+),(\w+)\]\s*·\s*\[(\w+),(\w+)\]/, '($1*$3+$2*$4)');
+gate.addTransform('cross_product_3d', /\[(\w+),(\w+),(\w+)\]\s*×\s*\[(\w+),(\w+),(\w+)\]/, '[($2*$6-$3*$5),($3*$4-$1*$6),($1*$5-$2*$4)]');
+gate.addTransform('vector_magnitude', /\|\[(\w+),(\w+)\]\|/, 'sqrt($1^2+$2^2)');
+gate.addTransform('eigenvalue_2x2', /λ\[\[(\w+),(\w+)\],\[(\w+),(\w+)\]\]/, 'roots of λ^2 - ($1+$4)*λ + ($1*$4-$2*$3) = 0');
+
+// Set Theory
+gate.addTransform('union_identity', /(\w+)\s*∪\s*∅/, '$1');
+gate.addTransform('intersect_identity', /(\w+)\s*∩\s*U(?!\w)/, '$1');
+gate.addTransform('union_self', /(\w+)\s*∪\s*\1(?!\w)/, '$1');
+gate.addTransform('intersect_self', /(\w+)\s*∩\s*\1(?!\w)/, '$1');
+gate.addTransform('intersect_empty', /(\w+)\s*∩\s*∅/, '∅');
+gate.addTransform('union_universal', /(\w+)\s*∪\s*U(?!\w)/, 'U');
+gate.addTransform('demorgan_union', /\((\w+)\s*∪\s*(\w+)\)'/, "$1' ∩ $2'");
+gate.addTransform('demorgan_intersect', /\((\w+)\s*∩\s*(\w+)\)'/, "$1' ∪ $2'");
+gate.addTransform('double_complement', /(\w+)''/, '$1');
+gate.addTransform('complement_intersect', /(\w+)\s*∩\s*\1'/, '∅');
+gate.addTransform('complement_union', /(\w+)\s*∪\s*\1'/, 'U');
+gate.addTransform('card_union', /\|(\w+)\s*∪\s*(\w+)\|/, '|$1| + |$2| - |$1 ∩ $2|');
+gate.addTransform('card_empty', /\|∅\|/, '0');
+
+// Logic
+gate.addTransform('double_neg', /¬¬(\w+)/, '$1');
+gate.addTransform('neg_true', /¬T/, 'F');
+gate.addTransform('neg_false', /¬F/, 'T');
+gate.addTransform('and_true', /(\w+)\s*∧\s*T/, '$1');
+gate.addTransform('and_false', /(\w+)\s*∧\s*F/, 'F');
+gate.addTransform('and_self', /(\w+)\s*∧\s*\1(?!\w)/, '$1');
+gate.addTransform('and_neg_self', /(\w+)\s*∧\s*¬\1/, 'F');
+gate.addTransform('or_true', /(\w+)\s*∨\s*T/, 'T');
+gate.addTransform('or_false', /(\w+)\s*∨\s*F/, '$1');
+gate.addTransform('or_self', /(\w+)\s*∨\s*\1(?!\w)/, '$1');
+gate.addTransform('or_neg_self', /(\w+)\s*∨\s*¬\1/, 'T');
+gate.addTransform('impl_def', /(\w+)\s*→\s*(\w+)/, '¬$1 ∨ $2');
+gate.addTransform('impl_true', /T\s*→\s*(\w+)/, '$1');
+gate.addTransform('impl_false', /F\s*→\s*(\w+)/, 'T');
+gate.addTransform('bicond_def', /(\w+)\s*↔\s*(\w+)/, '($1 → $2) ∧ ($2 → $1)');
+gate.addTransform('demorgan_and', /¬\((\w+)\s*∧\s*(\w+)\)/, '¬$1 ∨ ¬$2');
+gate.addTransform('demorgan_or', /¬\((\w+)\s*∨\s*(\w+)\)/, '¬$1 ∧ ¬$2');
+gate.addTransform('dist_and_or', /(\w+)\s*∧\s*\((\w+)\s*∨\s*(\w+)\)/, '($1 ∧ $2) ∨ ($1 ∧ $3)');
+gate.addTransform('dist_or_and', /(\w+)\s*∨\s*\((\w+)\s*∧\s*(\w+)\)/, '($1 ∨ $2) ∧ ($1 ∨ $3)');
+
+// Number Theory
+gate.addTransform('gcd_self', /gcd\((\w+),\1\)/, '$1');
+gate.addTransform('gcd_one', /gcd\((\w+),1\)/, '1');
+gate.addTransform('lcm_self', /lcm\((\w+),\1\)/, '$1');
+gate.addTransform('gcd_lcm', /gcd\((\w+),(\w+)\)\s*\*\s*lcm\(\1,\2\)/, '$1*$2');
+gate.addTransform('mod_self', /(\w+)\s*mod\s*\1/, '0');
+gate.addTransform('mod_zero', /0\s*mod\s*(\w+)/, '0');
+gate.addTransform('mod_add', /\((\w+)\s*\+\s*(\w+)\)\s*mod\s*(\w+)/, '(($1 mod $3) + ($2 mod $3)) mod $3');
+gate.addTransform('mod_mult', /\((\w+)\s*\*\s*(\w+)\)\s*mod\s*(\w+)/, '(($1 mod $3) * ($2 mod $3)) mod $3');
+gate.addTransform('cong_reflexive', /(\w+)\s*≡\s*\1\s*\(mod\s*(\w+)\)/, 'T');
+gate.addTransform('prime_2', /prime\(2\)/, 'T');
+gate.addTransform('prime_1', /prime\(1\)/, 'F');
+gate.addTransform('prime_0', /prime\(0\)/, 'F');
+gate.addTransform('floor_int', /⌊(\d+)⌋/, '$1');
+gate.addTransform('ceil_int', /⌈(\d+)⌉/, '$1');
+
+// Complex Analysis
+gate.addTransform('i_squared', /i\^2/, '-1');
+gate.addTransform('i_cubed', /i\^3/, '-i');
+gate.addTransform('i_fourth', /i\^4/, '1');
+gate.addTransform('euler_formula', /e\^\(i\*(\w+)\)/, 'cos($1)+i*sin($1)');
+gate.addTransform('euler_pi', /e\^\(i\*π\)/, '-1');
+gate.addTransform('conj_conj', /conj\(conj\((\w+)\)\)/, '$1');
+gate.addTransform('conj_real', /conj\((\d+)\)/, '$1');
+gate.addTransform('conj_sum', /conj\((\w+)\s*\+\s*(\w+)\)/, 'conj($1) + conj($2)');
+gate.addTransform('conj_product', /conj\((\w+)\s*\*\s*(\w+)\)/, 'conj($1) * conj($2)');
+gate.addTransform('mod_product_c', /\|(\w+)\s*\*\s*(\w+)\|/, '|$1| * |$2|');
+gate.addTransform('mod_quotient_c', /\|(\w+)\s*\/\s*(\w+)\|/, '|$1| / |$2|');
+gate.addTransform('re_real', /Re\((\d+)\)/, '$1');
+gate.addTransform('im_real', /Im\((\d+)\)/, '0');
+gate.addTransform('re_im_sum', /Re\((\w+)\)\s*\+\s*i\*Im\(\1\)/, '$1');
+
+// Differential Equations
+gate.addTransform('ode_exp', /y'\s*=\s*k\*y/, 'y = C*e^(k*x)');
+gate.addTransform('ode_decay', /y'\s*=\s*-k\*y/, 'y = C*e^(-k*x)');
+gate.addTransform('ode_separable', /y'\s*=\s*f\(x\)\*g\(y\)/, '∫ 1/g(y) dy = ∫ f(x) dx');
+gate.addTransform('ode_harmonic', /y''\s*\+\s*ω\^2\*y\s*=\s*0/, 'y = A*cos(ω*x) + B*sin(ω*x)');
+gate.addTransform('ode_exp_growth', /y''\s*-\s*k\^2\*y\s*=\s*0/, 'y = A*e^(k*x) + B*e^(-k*x)');
+gate.addTransform('laplace_1', /L\{1\}/, '1/s');
+gate.addTransform('laplace_t', /L\{t\}/, '1/s^2');
+gate.addTransform('laplace_exp', /L\{e\^\(a\*t\)\}/, '1/(s-a)');
+gate.addTransform('laplace_sin', /L\{sin\(ω\*t\)\}/, 'ω/(s^2+ω^2)');
+gate.addTransform('laplace_cos', /L\{cos\(ω\*t\)\}/, 's/(s^2+ω^2)');
+gate.addTransform('laplace_deriv', /L\{f'\(t\)\}/, 's*F(s) - f(0)');
+
+// Statistics
+gate.addTransform('prob_complement', /P\((\w+)'\)/, '1 - P($1)');
+gate.addTransform('prob_certain', /P\(U\)/, '1');
+gate.addTransform('prob_impossible', /P\(∅\)/, '0');
+gate.addTransform('prob_union', /P\((\w+)\s*∪\s*(\w+)\)/, 'P($1) + P($2) - P($1 ∩ $2)');
+gate.addTransform('prob_indep', /P\((\w+)\s*∩\s*(\w+)\)\s*indep/, 'P($1) * P($2)');
+gate.addTransform('prob_cond', /P\((\w+)\|(\w+)\)/, 'P($1 ∩ $2) / P($2)');
+gate.addTransform('bayes', /P\((\w+)\|(\w+)\)\s*bayes/, 'P($2|$1) * P($1) / P($2)');
+gate.addTransform('exp_const', /E\[(\d+)\]/, '$1');
+gate.addTransform('exp_linear', /E\[(\d+)\*(\w+)\s*\+\s*(\d+)\]/, '$1*E[$2] + $3');
+gate.addTransform('exp_sum', /E\[(\w+)\s*\+\s*(\w+)\]/, 'E[$1] + E[$2]');
+gate.addTransform('var_const', /Var\[(\d+)\]/, '0');
+gate.addTransform('var_linear', /Var\[(\d+)\*(\w+)\s*\+\s*(\d+)\]/, '$1^2 * Var[$2]');
+gate.addTransform('var_def', /Var\[(\w+)\]/, 'E[$1^2] - E[$1]^2');
+gate.addTransform('normal_std', /N\(0,1\)/, 'standard normal');
+gate.addTransform('binomial_exp', /E\[Bin\(n,p\)\]/, 'n*p');
+gate.addTransform('binomial_var', /Var\[Bin\(n,p\)\]/, 'n*p*(1-p)');
+gate.addTransform('poisson_exp', /E\[Pois\(λ\)\]/, 'λ');
+gate.addTransform('poisson_var', /Var\[Pois\(λ\)\]/, 'λ');
+
+// Show count
+document.getElementById('transform-count').textContent = gate.transforms.length;
+
+// ── UI ──────────────────────────────────────────
+
+const input = document.getElementById('expr-input');
+input.addEventListener('keydown', e => { if (e.key === 'Enter') run(); });
+
+function run(expr) {
+  if (expr !== undefined) input.value = expr;
+  const val = input.value.trim();
+  if (!val) return;
+
+  const result = gate.run(val);
+  const area = document.getElementById('result-area');
+
+  let html = '<div class="result-header">Result</div><div class="result-body">';
+
+  if (result.history.length === 0) {
+    html += `<div class="result-final"><span class="result-input">${esc(result.input)}</span></div>`;
+    html += `<div class="no-transform">No matching transform. Expression is in normal form.</div>`;
+  } else {
+    html += `<div class="result-final"><span class="result-input">${esc(result.input)}</span><span class="arrow">→</span><span class="result-output">${esc(result.output)}</span></div>`;
+    html += `<div class="steps">`;
+    result.history.forEach((s, i) => {
+      html += `<div class="step">
+        <span class="step-num">${i+1}</span>
+        <span class="step-rule">${esc(s.rule)}</span>
+        <span class="step-from">${esc(s.from)}</span>
+        <span class="step-arrow">→</span>
+        <span class="step-to">${esc(s.to)}</span>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  html += '</div>';
+  area.innerHTML = html;
+}
+
+function esc(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── EXAMPLES ────────────────────────────────────
+
+const examples = {
+  'Arithmetic': [
+    '(5 + 3)', '(10 * 7)', '(2 ^ 8)', '5!', '((3 + 4) * 2)'
+  ],
+  'Algebra': [
+    'x^2 * x^3', 'log(a * b)', 'log(x^n)', 'a^2 - b^2',
+    'sqrt(x^2)', 'ln(e)', 'a*(b + c)'
+  ],
+  'Calculus': [
+    'd/dx x^4', 'd/dx x^2', 'd/dx sin(x)', 'd/dx cos(x)',
+    'd/dx e^x', 'd/dx ln(x)', 'd/dx tan(x)', 'd/dx arctan(x)',
+    '∫ x^2 dx', '∫ cos(x) dx', '∫ sin(x) dx', '∫ e^x dx',
+    '∫ 1/x dx', '∫ sec(x)^2 dx'
+  ],
+  'Limits': [
+    'lim_{x->0} sin(x)/x', 'lim_{x->0} (1-cos(x))/x',
+    'lim_{n->∞} (1+1/n)^n', 'lim_{x->5} 3'
+  ],
+  'Trigonometry': [
+    'sin(x)^2 + cos(x)^2', 'sin(0)', 'cos(0)', 'cos(π)', 'sin(π/2)',
+    'sin(a + b)', 'cos(a + b)', 'sin(2*x)', '1/sin(x)',
+    'sin(x)/cos(x)', '1 + tan(x)^2', 'cos(-x)'
+  ],
+  'Linear Algebra': [
+    'det[[a,b],[c,d]]', 'tr[[a,b],[c,d]]', 'T[[a,b],[c,d]]',
+    '[a,b] · [c,d]', '[a,b,c] × [d,e,f]', '|[3,4]|', 'A * I'
+  ],
+  'Set Theory': [
+    'A ∪ ∅', 'A ∩ A', 'A ∩ ∅', "A ∪ A'", "(A ∪ B)'",
+    "(A ∩ B)'", '|∅|'
+  ],
+  'Logic': [
+    '¬¬p', 'p ∧ T', 'p ∧ F', 'p ∨ ¬p', 'p ∧ ¬p',
+    '¬(p ∧ q)', '¬(p ∨ q)', 'p → q', 'p ↔ q'
+  ],
+  'Number Theory': [
+    'gcd(x,x)', 'gcd(n,1)', 'x mod x', '0 mod n',
+    'prime(2)', 'prime(1)', '⌊7⌋', 'gcd(a,b) * lcm(a,b)'
+  ],
+  'Complex': [
+    'i^2', 'i^3', 'i^4', 'e^(i*π)', 'e^(i*θ)',
+    'conj(conj(z))', 'conj(5)', 'Re(7)', 'Im(7)'
+  ],
+  'Differential Equations': [
+    "y' = k*y", "y' = -k*y", "y'' + ω^2*y = 0",
+    "y'' - k^2*y = 0", "y' = f(x)*g(y)",
+    'L{1}', 'L{t}', 'L{sin(ω*t)}', 'L{cos(ω*t)}'
+  ],
+  'Statistics': [
+    "P(A')", 'P(∅)', 'P(U)', 'P(A ∪ B)',
+    'E[3*X + 5]', 'E[X + Y]', 'Var[Bin(n,p)]',
+    'Var[Pois(λ)]', 'E[Bin(n,p)]', 'N(0,1)'
+  ]
+};
+
+const exDiv = document.getElementById('examples');
+for (const [cat, exprs] of Object.entries(examples)) {
+  exDiv.innerHTML += `<div class="cat-label">${cat}</div><div class="example-btns">` +
+    exprs.map(e => `<button onclick="run('${e.replace(/'/g, "\\'")}')">${esc(e)}</button>`).join('') +
+    `</div>`;
+}
+</script>
+</body>
+</html>
