@@ -1,6 +1,6 @@
 # Universal Math Gate
 
-**All of symbolic mathematics in one gate.**
+**Symbolic mathematics in one gate.**
 
 216 pattern-rewrite rules across 11 mathematical domains. The stream's depth-first loop is the evaluation engine — expressions re-enter the gate until nothing matches and the result falls to pending. Math isn't calculation. It's transformation.
 
